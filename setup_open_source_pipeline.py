@@ -630,11 +630,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-'''
-    
-    with open('setup_open_source_pipeline.py', 'w') as f:
-        f.write(python_script.strip())
-    
-    # Make executable
-    os.chmod('setup_open_source_pipeline.py', 0o755)
-    print("✅ Python setup script created")
