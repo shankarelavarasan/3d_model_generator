@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  cad-processor:
+    build: ./cad_processor
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./processed:/app/processed
+      - ./logs:/app/logs
+    environment:
+      - FLASK_ENV=production
+      - PYTHONPATH=/app
+    restart: unless-stopped
+
+  hunyuan3d:
+    build: ./hunyuan3d
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./models:/app/models
+      - ./jobs:/app/jobs
+      - ./logs:/app/logs
+    environment:
+      - FLASK_ENV=production
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    depends_on:
+      - cad-processor
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./models:/usr/share/nginx/html/models:ro
+    depends_on:
+      - cad-processor
+      - hunyuan3d
+    restart: unless-stopped
+
+volumes:
+  uploads:
+  processed:
+  models:
+  jobs:
+  logs:
