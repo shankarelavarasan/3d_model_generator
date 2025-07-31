@@ -17,6 +17,15 @@ permalink: pretty
 baseurl: ""
 url: "https://shankarelavarasan.github.io"
 
+# GitHub Pages settings
+github:
+  repository_url: https://github.com/shankarelavarasan/3d-model-generator
+
+# Ensure index.md takes precedence over index.html
+readme_index:
+  remove_originals: true
+  with_frontmatter: true
+
 # Exclude from processing
 exclude:
   - .sass-cache/
