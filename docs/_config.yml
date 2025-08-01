@@ -1,6 +1,6 @@
 title: 3D Model Generator
-description: Convert CAD files to 3D models with AI-powered processing
-remote_theme: pages-themes/primer@v0.2.0
+  description: Generate 3D models from 2D images using AI
+remote_theme: pages-themes/cayman@v0.2.0
 plugins:
   - jekyll-remote-theme
   - jekyll-relative-links
