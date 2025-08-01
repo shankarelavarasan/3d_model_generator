@@ -18,7 +18,8 @@ baseurl: ""
 url: "https://shankarelavarasan.github.io"
 
 # GitHub Pages settings
-github:\  repository_url: https://github.com/shankarelavarasan/3d_model_generator
+github:
+  repository_url: https://github.com/shankarelavarasan/3d_model_generator
 
 # Ensure index.md takes precedence over index.html
 readme_index:
