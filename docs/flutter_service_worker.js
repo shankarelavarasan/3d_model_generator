@@ -1,5 +1,10 @@
 const TEMP = "flutter-app-cache";
-const CACHE_NAME = "flutter-app-cache";
+const CACHE_NAME = "flutter-app-cache-v2";
+const TEMP = "temp-cache";
+const MANIFEST = "flutter-app-manifest";
+const TIMEOUT_DURATION = 10000; // 10 seconds timeout
+const RETRY_ATTEMPTS = 3;
+
 const RESOURCES = {
   "version.json": "009c9e65172e010890f7f65fde438006",
   "index.html": "f679521fb5f22b18874de9a161e38532",
@@ -30,6 +35,29 @@ const RESOURCES = {
   "canvaskit/canvaskit.wasm": "9251bb81ae8464c4df3b072f84aa969b",
   "canvaskit/skwasm.worker.js": "bfb704a6c714a75da9ef320991e88b03"
 };
+
+// Utility function for timeout handling
+function fetchWithTimeout(request, timeout = TIMEOUT_DURATION) {
+  return Promise.race([
+    fetch(request),
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Request timeout')), timeout)
+    )
+  ]);
+}
+
+// Retry mechanism for failed requests
+async function fetchWithRetry(request, retries = RETRY_ATTEMPTS) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fetchWithTimeout(request);
+    } catch (error) {
+      console.warn(`Fetch attempt ${i + 1} failed:`, error.message);
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+    }
+  }
+}
 
 // The application shell files that are downloaded before a user can
 // use your application. For performance reasons, it is a good practice
@@ -112,14 +140,15 @@ self.addEventListener("activate", function(event) {
   }());
 });
 
-// The fetch handler redirects requests for RESOURCE files to the service
-// worker cache.
+// Enhanced fetch handler with timeout and retry mechanisms
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== 'GET') {
     return;
   }
+  
   var origin = self.location.origin;
   var key = event.request.url.substring(origin.length + 1);
+  
   // Redirect URLs to the index.html
   if (key.indexOf('?v=') != -1) {
     key = key.split('?v=')[0];
@@ -127,24 +156,53 @@ self.addEventListener("fetch", (event) => {
   if (event.request.url == origin || event.request.url.startsWith(origin + '/#') || key == '') {
     key = '/';
   }
-  // If the URL is not the RESOURCE list then return to fetch() for the resource.
+  
+  // Enhanced handling for non-resource requests
   if (!RESOURCES[key]) {
-    return event.respondWith(fetch(event.request));
+    return event.respondWith(
+      fetchWithRetry(event.request)
+        .catch(error => {
+          console.error('Failed to fetch non-resource:', error);
+          // Return offline fallback if available
+          return caches.match('/index.html');
+        })
+    );
   }
-  // If the URL is in the resource list, respond with the cached resource
-  event.respondWith(caches.open(CACHE_NAME)
-    .then((cache) =>  {
-      return cache.match(event.request).then((response) => {
-        // Either respond with the cached resource, or perform a fetch and
-        // lazily populate the cache only if the resource was successfully fetched.
-        return response || fetch(event.request).then((response) => {
-          if (response && Boolean(response.ok)) {
-            cache.put(event.request, response.clone());
+  
+  // Enhanced caching strategy for resource requests
+  event.respondWith(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        return cache.match(event.request).then(response => {
+          if (response) {
+            // Return cached response immediately
+            return response;
           }
-          return response;
+          
+          // Fetch with timeout and retry for cache miss
+          return fetchWithRetry(event.request)
+            .then(networkResponse => {
+              if (networkResponse && networkResponse.ok) {
+                // Clone and cache the response
+                cache.put(event.request, networkResponse.clone());
+              }
+              return networkResponse;
+            })
+            .catch(error => {
+              console.error('Failed to fetch resource:', key, error);
+              // Return a basic error response
+              return new Response('Resource unavailable', {
+                status: 503,
+                statusText: 'Service Unavailable'
+              });
+            });
         });
       })
-    }));
+      .catch(error => {
+        console.error('Cache operation failed:', error);
+        return fetchWithRetry(event.request);
+      })
+  );
 });
 
 self.addEventListener('message', (event) => {

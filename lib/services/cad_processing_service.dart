@@ -4,6 +4,7 @@ import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 import 'hunyuan3d_service.dart';
 import 'upload_service.dart';
+import '../core/error_handler.dart';
 
 class CADProcessingService {
   final Hunyuan3DService _hunyuan3DService;
@@ -27,7 +28,13 @@ class CADProcessingService {
       // Step 1: Validate CAD files
       final validationResult = await _validateCADFiles(cadFileUrls);
       if (!validationResult['valid']) {
-        throw Exception('Invalid CAD files: ${validationResult['errors']}');
+        final error = AppError(
+          type: ErrorType.processing,
+          message: 'Invalid CAD files',
+          details: validationResult['errors'].toString(),
+        );
+        ErrorHandler.logError(error);
+        throw error;
       }
       
       // Step 2: Pre-process CAD files using OpenCascade
@@ -58,10 +65,34 @@ class CADProcessingService {
             : 'Single CAD file processed',
       };
       
-    } catch (e) {
+    } on SocketException catch (e) {
+      final error = AppError(
+        type: ErrorType.network,
+        message: 'Network error during CAD processing',
+        details: e.toString(),
+      );
+      ErrorHandler.logError(error);
       return {
         'success': false,
-        'error': e.toString(),
+        'error': ErrorHandler.getErrorMessage(error),
+        'cad_processing_notes': 'Processing failed due to network issues',
+      };
+    } on AppError catch (e) {
+      return {
+        'success': false,
+        'error': ErrorHandler.getErrorMessage(e),
+        'cad_processing_notes': 'Processing failed at CAD processing stage',
+      };
+    } catch (e) {
+      final error = AppError(
+        type: ErrorType.processing,
+        message: 'Unexpected error during CAD processing',
+        details: e.toString(),
+      );
+      ErrorHandler.logError(error);
+      return {
+        'success': false,
+        'error': ErrorHandler.getErrorMessage(error),
         'cad_processing_notes': 'Processing failed at CAD processing stage',
       };
     }
