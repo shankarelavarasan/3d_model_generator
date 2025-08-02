@@ -61,7 +61,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('flutter_service_worker.js', {
-          scope: '/'
+          scope: '/3d_model_generator/'
         }).then(function(registration) {
           console.log('Service Worker registered successfully:', registration.scope);
           
