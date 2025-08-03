@@ -5,7 +5,7 @@ import '../../services/upload_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/cache_service.dart';
 import '../../services/hunyuan3d_service.dart';
-import '../error/error_handler.dart';
+import '../error_handler.dart';
 import '../cache/cache_manager.dart';
 import '../monitoring/performance_monitor.dart';
 

@@ -30,11 +30,16 @@ dependencies:
   # Supabase authentication and database
   supabase_flutter: ^2.8.3
   supabase_auth_ui: ^0.5.4
+  
+  # State management
+  flutter_riverpod: ^2.4.9
 
 dev_dependencies:
   flutter_test:    # 🚨 CRITICAL: Required for Flutter project testing - DO NOT REMOVE
     sdk: flutter   # 🚨 CRITICAL: Required for Flutter project testing - DO NOT REMOVE
   flutter_lints: ^5.0.0 # 🚨 CRITICAL: Required for code quality - DO NOT REMOVE
+  mockito: ^5.4.4
+  build_runner: ^2.4.7
 
 flutter:
   uses-material-design: true # 🚨 CRITICAL: Required for Material icon font - DO NOT REMOVE

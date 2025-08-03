@@ -1,25 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <base href="/3d_model_generator/">
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-  <meta name="description" content="Generate 3D models from images and CAD files using AI technology">
-  <meta name="keywords" content="3D model, AI, CAD, image to 3D, model generator">
-  <meta name="author" content="Rapid 3D Model Generator">
-  <meta name="theme-color" content="#2196F3">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="3D Model Gen">
-  
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json">
-  
-  <!-- Favicon and Icons -->
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
-  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-  
-  <title>Rapid 3D Model Generator</title>
+  <title>3D Model Generator</title>
   <style>
     body {
       background-color: #1a1a2e;
@@ -57,32 +42,6 @@
   </div>
   <script src="flutter.js" defer></script>
   <script>
-    // Enhanced service worker registration with error handling
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('flutter_service_worker.js', {
-          scope: '/3d_model_generator/'
-        }).then(function(registration) {
-          console.log('Service Worker registered successfully:', registration.scope);
-          
-          // Handle updates
-          registration.addEventListener('updatefound', function() {
-            const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', function() {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New content is available, prompt user to refresh
-                if (confirm('New version available! Refresh to update?')) {
-                  window.location.reload();
-                }
-              }
-            });
-          });
-        }).catch(function(error) {
-          console.log('Service Worker registration failed:', error);
-        });
-      });
-    }
-
     window.addEventListener('load', function() {
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
@@ -91,18 +50,6 @@
         onEntrypointLoaded: function(engineInitializer) {
           engineInitializer.initializeEngine().then(function(appRunner) {
             appRunner.runApp();
-            
-            // Hide loading screen
-            const loadingElement = document.querySelector('.loading');
-            if (loadingElement) {
-              loadingElement.style.display = 'none';
-            }
-          }).catch(function(error) {
-            console.error('Failed to initialize Flutter engine:', error);
-            const loadingElement = document.querySelector('.loading');
-            if (loadingElement) {
-              loadingElement.innerHTML = '<div class="spinner"></div>Failed to load application. Please refresh the page.';
-            }
           });
         }
       });
